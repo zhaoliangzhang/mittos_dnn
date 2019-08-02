@@ -80,28 +80,17 @@ void linear_uint8(u_int8_t* input, u_int8_t* weight, u_int8_t* bias, u_int8_t* o
 }
 
 void linear_float(float* input, float* weight, float* bias, float* output, int* shape) {
-    float temp[shape[2]];
-    for(int i=0; i<shape[0]; i++) {
-        for(int j=0; j<shape[2]; j++) temp[j] = 0;
-        for(int j=0; j<shape[1]; j++) {
-            for(int k=0; k<shape[2]; k++) {
-                temp[k] += input[i*shape[1]+j] * weight[j*shape[2]+k];
-            }
-        }
-        if(shape[3]) {
-            for(int j=0; j<shape[2]; j++) output[i*shape[2]+j] = temp[j] + bias[i*shape[2]+j];
-        } else {
-            for(int j=0; j<shape[2]; j++) output[i*shape[2]+j] = temp[j];
-        }
-    }
-   /*for(int i=0; i<shape[0]; i++) {
+   for(int i=0; i<shape[0]; i++) {
         for(int j=0; j<shape[2]; j++) {
             output[i*shape[2]+j] = 0;
             for(int k=0; k<shape[1]; k++) {
                 output[i*shape[2]+j] += input[i*shape[1]+k] * weight[k*shape[2]+j];
             }
+            if(output[i*shape[2]+j]<0) {
+                output[i*shape[2]+j] = 0;
+            }
         }
-    }*/
+    }
 }
 
 void linear_float2(float* input, float* weight, float* bias, float* output, int* shape) {
@@ -114,17 +103,17 @@ void linear_float2(float* input, float* weight, float* bias, float* output, int*
                 output[i*shape[2]+j] += input[i*shape[1]+k+2] * weight[(k+2)*shape[2]+j];
                 output[i*shape[2]+j] += input[i*shape[1]+k+3] * weight[(k+3)*shape[2]+j];
             }
+            if(output[i*shape[2]+j]<0) {
+                output[i*shape[2]+j] = 0;
+            }
         }
     }
 }
 
-void* inner_product(void* arg) {
-    while(!sem_trywait(&task_num)) {
-        int row = exist_job;
-        exist_job -= 1;
-        output[row] = 0;
-        for(int i=0; i<shape[1]; i++) {
-            output[row] += input[row*shape[1]+i]*weight[i];
-        }
-    }
+void* DNN(void *arg) {
+    int if_wait = sem_trywait(&task_num);
+    int ID = *(int*)arg;
+    float temp[128] = {0};
+    linear_float2(input[ID], weight, bias, temp, shape);
+    linear_float2(temp, weight, bias, output[ID], shape2);
 }

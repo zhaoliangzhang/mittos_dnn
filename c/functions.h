@@ -4,14 +4,15 @@
 #include <stdbool.h>
 
 #define MAX_THREAD_NUM 4
+#define TASK_NUM 4
 
-float* input;
-float* output;
-float* weight;
-int* shape;
-int* shape2;
-float* output2;
-int  exist_job;
+float *input[MAX_THREAD_NUM];
+float *output[MAX_THREAD_NUM];
+float *weight;
+float *bias;
+int *shape;
+int *shape2;
+float *output2;
 bool if_free;
 sem_t task_num;
 
@@ -27,4 +28,4 @@ void linear_uint8(u_int8_t* input, u_int8_t* weight, u_int8_t* bias, u_int8_t* o
 void linear_float(float* input, float* weight, float* bias, float* output, int* shape);
 void linear_float2(float* input, float* weight, float* bias, float* output, int* shape);
 
-void* inner_product(void* arg);
+void* DNN(void *arg);
