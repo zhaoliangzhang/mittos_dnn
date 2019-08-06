@@ -1,9 +1,11 @@
 
 # object:
 *.o
+gpu/*.o
 
 # execution file:
 main
+gpu/main*
 
 # weight weight
 *.pb
@@ -18,3 +20,10 @@ pytorch/__pycache__/
 
 # script file
 script/
+
+# gpu simulate file
+gpu/_app_*
+gpu/_cuobjdump_*
+gpu/config_*
+gpu/gpgpgu*
+gpu/gpuwattch*
