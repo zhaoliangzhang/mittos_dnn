@@ -110,6 +110,7 @@ void linear_float2(float* input, float* weight, float* bias, float* output, int*
     }
 }
 
+#ifdef MULTI_THREAD
 void* DNN(void *arg) {
     int if_wait = sem_trywait(&task_num);
     int ID = *(int*)arg;
@@ -117,3 +118,4 @@ void* DNN(void *arg) {
     linear_float2(input[ID], weight, bias, temp, shape);
     linear_float2(temp, weight, bias, output[ID], shape2);
 }
+#endif

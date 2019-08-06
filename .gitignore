@@ -4,3 +4,10 @@
 
 # execution file:
 main
+
+# weight weight
+*.pb
+c/*.bin
+
+# script file
+script/

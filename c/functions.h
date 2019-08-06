@@ -5,6 +5,7 @@
 
 #define MAX_THREAD_NUM 4
 #define TASK_NUM 4
+#define NORMAL 1
 
 float *input[MAX_THREAD_NUM];
 float *output[MAX_THREAD_NUM];

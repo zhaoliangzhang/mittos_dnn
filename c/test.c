@@ -28,6 +28,19 @@ int main() {
     float* output2_float = (float*)malloc(sizeof(float)*1);
     float* bias_float;
 
+    FILE *weight_ptr;
+    int unused __attribute__((unused));
+    if((weight_ptr = fopen("ncnn.bin", "r")) == NULL) {
+        printf("Opne weight file erro\n");
+        return -1;
+    }
+    fseek(weight_ptr, sizeof(float), SEEK_CUR);
+    unused = fread(weight_float, sizeof(float), 40*128, weight_ptr);
+    fseek(weight_ptr, sizeof(float), SEEK_CUR);
+    unused = fread(weight_float+40*128, sizeof(float), 40*128, weight_ptr);
+    fclose(weight_ptr);
+
+#ifdef MULTI_THREAD
     for(int i=0; i<4; i++) {
         input[i] = (float*)malloc(sizeof(float)*128*128);
         output[i] = (float*)malloc(sizeof(float)*128*128);
@@ -47,6 +60,7 @@ int main() {
     shape2 = (int*)malloc(sizeof(int)*4);
     shape[0]=128;shape[1]=40;shape[2]=1;shape[3]=0;
     shape2[0]=1;shape2[1]=128;shape2[2]=1;shape2[3]=0;
+#endif
 
     double t1,t2;
 
@@ -68,6 +82,7 @@ int main() {
 
     printf("Execution time of float2:     %*lf ns\n", 15, (t2-t1)*1000/(fre*1000));*/
 
+#ifdef MULTI_THREAD
     t1 = (double)GetCycleCount();
     sem_init(&task_num, 0, TASK_NUM);
     void* retval;
@@ -93,6 +108,7 @@ int main() {
     free(weight);
     free(shape);
     free(shape2);
+#endif
 
     return 0;
     
