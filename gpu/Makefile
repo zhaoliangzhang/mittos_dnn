@@ -13,4 +13,4 @@ $(EXE): $(OBJS)
 	@$(NCC) test.cu -o $@ $(LDFLAGES)
 
 clean:
-	@rm -f main
+	@rm -f main *.o

@@ -1,6 +1,16 @@
-/*#include "device_launch_parameters.h"
+#include "device_launch_parameters.h"
 #include <iostream>
+#include "cuda_runtime.h"
+#include <stdlib.h>
+#include <sys/time.h>
+#include <stdio.h>
+#include <stdlib.h>
 
+#define DEVICE_TEST 1
+
+using namespace std;
+
+#ifdef DEVICE_TEST
 int main()
 {
     int deviceCount;
@@ -22,16 +32,8 @@ int main()
         
     }
     return 0;
-}*/
-
-#include "cuda_runtime.h"
-#include <stdlib.h>
-#include <iostream>
-#include <sys/time.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-using namespace std;
+}
+#else
 
 __global__ void CUDA_matrix_multiplication(float Input[], float Weight[], float Output[], int shape[]) {
     int row = blockIdx.y*blockDim.y + threadIdx.y;
@@ -111,3 +113,4 @@ int main() {
     
     return 0;
 }
+#endif

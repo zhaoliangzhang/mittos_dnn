@@ -24,6 +24,6 @@ Use command "make" to compile after entering this folder.
 
 ## Running enviroment
 
-gcc v7.4.0  
+gcc v5.5.0  
 pytorch-cpu v1.1.0  
 CUDA compilation tools, release 9.1
