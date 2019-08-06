@@ -25,5 +25,5 @@ script/
 gpu/_app_*
 gpu/_cuobjdump_*
 gpu/config_*
-gpu/gpgpgu*
+gpu/gpgpu*
 gpu/gpuwattch*
