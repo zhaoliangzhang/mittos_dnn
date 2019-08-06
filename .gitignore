@@ -8,6 +8,13 @@ main
 # weight weight
 *.pb
 c/*.bin
+pytorch/module/
+
+# test data
+pytorch/traindata
+
+# python cache
+pytorch/__pycache__/
 
 # script file
 script/
