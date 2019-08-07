@@ -35,95 +35,92 @@ int main()
 }
 #else
 
-inline double seconds()
-{
-    struct timeval tp;
-    struct timezone tzp;
-    int i = gettimeofday(&tp, &tzp);
-    return ((double)tp.tv_sec + (double)tp.tv_usec * 1.e-6);
-}
-
-__global__ void CUDA_matrix_multiplication(float Input[], float Weight[], float Output[], int shape[]) {
+__global__ void CUDA_matrix_multiplication1(float Input[], float Weight[], float Output[]) {
     int row = blockIdx.y*blockDim.y + threadIdx.y;
     int colum = blockIdx.x*blockDim.x + threadIdx.x;
     
     float sum = 0;
-    if(row<shape[0] && colum<shape[2]) {
-        for (int i=0; i<shape[1]; i++) {
-            sum += Input[row*shape[1] + i] * Weight[i*shape[2] + colum];
+    if(row<128 && colum<1) {
+        for (int i=0; i<40; i++) {
+            sum += Weight[row*40 + i] * Input[i*1 + colum];
         }
-        Output[row*shape[2] + colum] = sum;
+        Output[row*1 + colum] = sum;
+    }
+}
+
+__global__ void CUDA_matrix_multiplication2(float Input[], float Weight[], float Output[]) {
+    int row = blockIdx.y*blockDim.y + threadIdx.y;
+    int colum = blockIdx.x*blockDim.x + threadIdx.x;
+    
+    float sum = 0;
+    if(row<1 && colum<1) {
+        for (int i=0; i<128; i++) {
+            sum += Input[row*128 + i] * Weight[i*1 + colum];
+        }
+        Output[row*1 + colum] = sum;
     }
 }
 
 int main() {
+
     float *input, *weight, *output;
     float *Input, *Weight, *Output;
-    int *Shape;
-    int shape[4] = {40,1,128,0};
 
     // Alloc memory for CPU
+    //cudaHostAlloc((void **) &input, sizeof(float)*1024*1024, cudaHostAllocDefault);
+    //cudaHostAlloc((void **) &weight, sizeof(float)*1024*1024, cudaHostAllocDefault);
+    //cudaHostAlloc((void **) &output, sizeof(float)*1024*1024, cudaHostAllocDefault);
     input = (float*)malloc(1024*1024*sizeof(float));
     weight = (float*)malloc(1024*1024*sizeof(float));
     output = (float*)malloc(1024*1024*sizeof(float));
 
     // Array initialization
-    /*for(int i=0; i<16; i++) {
-        input[i] = (float)rand();
-        weight[i] = (float)rand();
+    /*for(int i=0; i<3; i++) {
+        for(int j=0; j<3; j++) {
+            input[i*3+j] = i;
+            weight[i*3+j] = 1;
+        }
     }*/
 
-    double start, exetime;
-    start = seconds();
 
     // Alloc memory for GPU
     cudaMalloc((void**)&Input, 1024*1024*sizeof(float));
     cudaMalloc((void**)&Weight, 1024*1024*sizeof(float));
     cudaMalloc((void**)&Output, 1024*1024*sizeof(float));
-    cudaMalloc((void**)&Shape, 4*sizeof(int));
 
     // Move data from CPU to GPU
-    cudaMemcpy(Input, input, shape[0]*shape[1]*sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(Weight, weight, shape[1]*shape[2]*sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(Input, input, 40*sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(Weight, weight, 128*40*sizeof(float), cudaMemcpyHostToDevice);
     //cudaMemcpy(Output, output, shape[0]*shape[2]*sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(Shape, shape, 4*sizeof(int), cudaMemcpyHostToDevice);
 
     // Configuration of kernels, basic block has 64 threads
     dim3 dimBlock(16,16,1);
-    dim3 dimGrid(shape[0]/8+1,shape[2]/8+1,1);
+    dim3 dimGrid(1/16+1,1/16+1,1);
 
     // Kernel execution
-    CUDA_matrix_multiplication<<<dimGrid, dimBlock>>>(Input, Weight, Output, Shape);
+    CUDA_matrix_multiplication1<<<dimGrid, dimBlock>>>(Input, Weight, Output);
+    CUDA_matrix_multiplication2<<<dimGrid, dimBlock>>>(Output, Weight, Input);
 
     // Move data from GPU to CPU
-    cudaMemcpy(output, Output, shape[0]*shape[2]*sizeof(float), cudaMemcpyDeviceToHost);
+    //cudaMemcpy(output, Output, shape[0]*shape[2]*sizeof(float), cudaMemcpyDeviceToHost);
     
-    shape[0] = 128; shape[1] = 1; shape[2] =1; shape[3] = 0;
-    cudaMemcpy(Input, output, shape[0]*shape[1]*sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(Shape, shape, 4*sizeof(int), cudaMemcpyHostToDevice);
+    //cudaMemcpy(Input, output, shape[0]*shape[1]*sizeof(float), cudaMemcpyHostToDevice);
+    //cudaMemcpy(Shape, shape, 4*sizeof(int), cudaMemcpyHostToDevice);
 
-    CUDA_matrix_multiplication<<<dimGrid, dimBlock>>>(Input, Weight, Output, Shape);
-    cudaMemcpy(output, Output, shape[0]*shape[2]*sizeof(float), cudaMemcpyDeviceToHost);
+    //CUDA_matrix_multiplication<<<dimGrid, dimBlock>>>(Input, Weight, Output, Shape);
 
-    exetime = seconds() - start;
-    printf("Time used:%f us\n", exetime*1000000);
-
-
-    for(int i=0;i<3; i++) {
-        for(int j=0; j<3; j++) {
-            cout<<output[i*3+j]<<" ";
-        }
-        cout<<endl;
-    }
+    cudaMemcpy(input, Input, 1*sizeof(float), cudaMemcpyDeviceToHost);
 
     // Free memory
+    //cudaFreeHost(input);
+    //cudaFreeHost(weight);
+    //cudaFreeHost(output);
     free(input);
     free(weight);
     free(output);
     cudaFree(Input);
     cudaFree(Weight);
     cudaFree(Output);
-    cudaFree(Shape);
     
     return 0;
 }
