@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define DEVICE_TEST 1
+//#define DEVICE_TEST
 
 using namespace std;
 
@@ -34,6 +34,14 @@ int main()
     return 0;
 }
 #else
+
+inline double seconds()
+{
+    struct timeval tp;
+    struct timezone tzp;
+    int i = gettimeofday(&tp, &tzp);
+    return ((double)tp.tv_sec + (double)tp.tv_usec * 1.e-6);
+}
 
 __global__ void CUDA_matrix_multiplication(float Input[], float Weight[], float Output[], int shape[]) {
     int row = blockIdx.y*blockDim.y + threadIdx.y;
@@ -65,6 +73,9 @@ int main() {
         weight[i] = (float)rand();
     }*/
 
+    double start, exetime;
+    start = seconds();
+
     // Alloc memory for GPU
     cudaMalloc((void**)&Input, 1024*1024*sizeof(float));
     cudaMalloc((void**)&Weight, 1024*1024*sizeof(float));
@@ -93,6 +104,9 @@ int main() {
 
     CUDA_matrix_multiplication<<<dimGrid, dimBlock>>>(Input, Weight, Output, Shape);
     cudaMemcpy(output, Output, shape[0]*shape[2]*sizeof(float), cudaMemcpyDeviceToHost);
+
+    exetime = seconds() - start;
+    printf("Time used:%f us\n", exetime*1000000);
 
 
     for(int i=0;i<3; i++) {
