@@ -1,13 +1,6 @@
 #include <stdlib.h>
 #include "functions.h"
 
-static __inline__ unsigned long long GetCycleCount()
-{
-        unsigned hi,lo;
-        __asm__ volatile("rdtsc":"=a"(lo),"=d"(hi));
-        return ((unsigned long long)lo)|(((unsigned long long)hi)<<32);
-}
-
 int main() {
 
     FILE *fp;
@@ -40,6 +33,13 @@ int main() {
     unused = fread(weight_float+40*128, sizeof(float), 40*128, weight_ptr);
     fclose(weight_ptr);
 
+    shape = (int*)malloc(sizeof(int)*4);
+    shape2 = (int*)malloc(sizeof(int)*4);
+    shape[0]=128;shape[1]=40;shape[2]=1;shape[3]=0;
+    shape2[0]=1;shape2[1]=128;shape2[2]=1;shape2[3]=0;
+
+    double t1,t2;
+
 #ifdef MULTI_THREAD
     for(int i=0; i<4; i++) {
         input[i] = (float*)malloc(sizeof(float)*128*128);
@@ -56,15 +56,50 @@ int main() {
             input[3][i*128+j] = (float)rand();
         }
     }
-    shape = (int*)malloc(sizeof(int)*4);
-    shape2 = (int*)malloc(sizeof(int)*4);
-    shape[0]=128;shape[1]=40;shape[2]=1;shape[3]=0;
-    shape2[0]=1;shape2[1]=128;shape2[2]=1;shape2[3]=0;
-#endif
 
-    double t1,t2;
+    Max = 0;
+    Min = 1e300;
 
-    /*t1 = (double)GetCycleCount();
+    t1 = (double)GetCycleCount();
+    void* retval;
+    pthread_t vector_inner[MAX_THREAD_NUM];
+    int create_thread_success;
+    int end_tread_success;
+    int id[4] = {0,1,2,3};
+    //sem_init(&task_num, 0, 0);
+    for(int i=0; i<MAX_THREAD_NUM; i++) {
+        create_thread_success = pthread_create(&vector_inner[i], NULL, DNN, (void*)(id+i));
+    }
+    //sem_init(&task_num, 0, TASK_NUM);
+    sem_post(&task_num);
+    sem_post(&task_num);
+    sem_post(&task_num);
+    sem_post(&task_num);
+    tt=0;
+    sleep(2);
+    for(int j=0; j<MAX_THREAD_NUM; j++) {
+        end_tread_success = pthread_join(vector_inner[j], &retval);
+    }
+    sem_destroy(&task_num);
+    t2 = (double)GetCycleCount();
+
+    printf("Execution time of multithreads:                                  %*lf ns\n", 15, (t2-t1)*1000/fre - 2000000000);
+    printf("Execution time of multithreads:                                  %*lf ns\n", 15, tt*1000/fre);
+    printf("Execution time of multithreads(without thread creation and exit):%*lf ns\n", 15, (Max-Min)*1000/fre);
+    //for(int i=0; i<8; i++){
+        //printf("%lf\n", t[i]);
+    //}
+    printf("%lf %lf\n", Max, Min);
+ 
+    for(int i=0; i<MAX_THREAD_NUM; i++) {
+        free(input[i]);
+        free(output[i]);
+    }
+    free(weight);
+    free(shape);
+    free(shape2);
+#else
+    t1 = (double)GetCycleCount();
     for(int i=0; i<1000; i++){
     linear_float(input_float, weight_float, bias_float, output_float, shape);
     //linear_float(output_float, weight_float, bias_float, output2_float, shape2);
@@ -80,34 +115,8 @@ int main() {
     }
     t2 = (double)GetCycleCount();
 
-    printf("Execution time of float2:     %*lf ns\n", 15, (t2-t1)*1000/(fre*1000));*/
-
-#ifdef MULTI_THREAD
-    t1 = (double)GetCycleCount();
-    sem_init(&task_num, 0, TASK_NUM);
-    void* retval;
-    pthread_t vector_inner[MAX_THREAD_NUM];
-    int create_thread_success;
-    int end_tread_success;
-    int id[4] = {0,1,2,3};
-    for(int i=0; i<MAX_THREAD_NUM; i++) {
-        create_thread_success = pthread_create(&vector_inner[i], NULL, DNN, (void*)(id+i));
-    }
-    for(int j=0; j<MAX_THREAD_NUM; j++) {
-        end_tread_success = pthread_join(vector_inner[j], &retval);
-    }
-    sem_destroy(&task_num);
-    t2 = (double)GetCycleCount();
-
-    printf("Execution time of multithreads:%*lf ns\n", 15, (t2-t1)*1000/fre);
- 
-    for(int i=0; i<MAX_THREAD_NUM; i++) {
-        free(input[i]);
-        free(output[i]);
-    }
-    free(weight);
-    free(shape);
-    free(shape2);
+    printf("Execution time of float2:     %*lf ns\n", 15, (t2-t1)*1000/(fre*1000));
+  
 #endif
 
     return 0;

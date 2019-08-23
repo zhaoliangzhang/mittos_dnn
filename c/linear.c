@@ -86,6 +86,9 @@ void linear_float(float* input, float* weight, float* bias, float* output, int* 
             for(int k=0; k<shape[1]; k++) {
                 output[i*shape[2]+j] += input[i*shape[1]+k] * weight[k*shape[2]+j];
             }
+            if(shape[3]){
+                output[i*shape[2]+j] += bias[i*shape[2]+j];
+            }
             if(output[i*shape[2]+j]<0) {
                 output[i*shape[2]+j] = 0;
             }
@@ -103,6 +106,9 @@ void linear_float2(float* input, float* weight, float* bias, float* output, int*
                 output[i*shape[2]+j] += input[i*shape[1]+k+2] * weight[(k+2)*shape[2]+j];
                 output[i*shape[2]+j] += input[i*shape[1]+k+3] * weight[(k+3)*shape[2]+j];
             }
+            if(shape[3]){
+                output[i*shape[2]+j] += bias[i*shape[2]+j];
+            }
             if(output[i*shape[2]+j]<0) {
                 output[i*shape[2]+j] = 0;
             }
@@ -112,10 +118,22 @@ void linear_float2(float* input, float* weight, float* bias, float* output, int*
 
 #ifdef MULTI_THREAD
 void* DNN(void *arg) {
-    int if_wait = sem_trywait(&task_num);
     int ID = *(int*)arg;
-    float temp[128] = {0};
-    linear_float2(input[ID], weight, bias, temp, shape);
-    linear_float2(temp, weight, bias, output[ID], shape2);
+    int value;
+    sem_getvalue(&task_num, &value);
+    printf("%d %d\n", ID, value);
+    int if_wait = sem_wait(&task_num);
+    sem_getvalue(&task_num, &value);
+    printf("%d 55 %d\n", ID, value);
+    if(!if_wait) {
+        t[ID*2] = (double)GetCycleCount();
+        if(Min>t[ID*2]) Min=t[ID*2];
+        linear_float2(input[ID], weight, bias, temp[ID], shape);
+        linear_float2(temp[ID], weight, bias, output[ID], shape2);
+        t[ID*2+1] = (double)GetCycleCount();
+        printf("%d %lf %lf\n", ID, t[ID*2], t[ID*2+1]);
+        if(Max<t[ID*2+1]) Max=t[ID*2+1];
+        tt += (t[ID*2+1]-t[ID*2]);
+    }
 }
 #endif
