@@ -4,14 +4,23 @@
 1. Download SCALE-Sim  
 * The git link as follows:  
 https://github.com/ARM-software/SCALE-Sim  
+You can also find more details in the paper of SCALE-Sim:  
+https://arxiv.org/abs/1811.02883
 2. Define hardware architecture  
-* We can use the architecture already defined by developer, which can be found in the git of SCALE-Sim.   
+* We can use the architecture already defined by developer, which can be found in the git of SCALE-Sim. In the directory "configs/"   
 * If you want to use the architecture of your own, create a .cfg file first, then define your architecture. An example of config file is shown as below:  
 ![Image text](https://raw.githubusercontent.com/AnandS09/SCALE-Sim/master/images/config_example.png)  
+The defination of parameters as follows:  
+![Image text](https://raw.githubusercontent.com/zhaoliangzhang/mittos_dnn/master/image/config_parameter.PNG)  
+This is the Table 1 in SCALE-Sim, you also find it in the paper.  
+The "Topology" is not necessary, I tried to add it but seems it will not use the topology file you mentioned in config file.  
 
 3. Create topology file  
 * SCALE-Sim accept a csv file contains the network we want to simulate. The format of topology file is shown below.  
 ![Image text](https://raw.githubusercontent.com/AnandS09/SCALE-Sim/master/images/yolo_tiny_csv.png)  
+The defination of parameters as follows:
+![Image text](https://raw.githubusercontent.com/zhaoliangzhang/mittos_dnn/master/image/topology_parameter.PNG)  
+This is the Table 2 in the paper.
 * If your network contains branch topology, the SCALE-Sim will simulate it serially.  
 
 4. Run the simulation  
