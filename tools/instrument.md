@@ -27,6 +27,8 @@ This is the Table 2 in the paper.
 * type the command below in terminal  
  `python scale.py -arch_config=your_architecture.cfg -network=your_topology.csv`  
 The .cfg and .csv file mean your hardware configuration and network topology  
+The files I use are "google.cfg" and "mynet.csv", which are in the same directory as this instrument. "google.cfg" is the hardware architecture developed by SCALE-Sim developers and "mynet.csv" is a topology of a simple DNN, it has 40 input features, 1 output feature and one hidden layer with 128 features. The simulation result as follows:  
+![Image text](https://raw.githubusercontent.com/zhaoliangzhang/mittos_dnn/master/image/SCALE_Sim_Result.PNG)
 
 ## GPGPUSim  
 1. Download Source codes  
@@ -64,10 +66,11 @@ python-matplotlib
 "build_type" could be "debug" or "release", default is release if no parameter found.  
 * Just run:  
 `make`  
-then wait it down, it should take sevarl minutes  
+then wait it done, it should take sevarl minutes  
 
 4. Run  
-* First compile your application written in CUDA using nvcc
+* First compile your application written in CUDA using nvcc  
+An example of CUDA application is in the directory named "gpu" of this repository, a Makefile is included, may help you understand how to use nvcc.  
 * Copy the config files to your application working directory, for example:  
 `cp configs/deprecated-cfgs/SM6_GTX1080/* your_working_directory/`  
 * Then you may need to modify the file you copied named "gpgpusim.config", here're some useful hints:  
@@ -101,4 +104,5 @@ Just compile the codes and you can gain a executable file named "onnx2ncnn", the
 onnx_file is the onnx model file as the input, the topology_file and weight_file are output files and these two parameters can be missed and using the default value. toplogy_files is a chart present the topology of network, the instruction is as follow:  
 https://github.com/Tencent/ncnn/wiki/operation-param-weight-table  
 weigth_file is the binary file contains weight of network. Be aware, before every group, there's a float key to point the data type of the parameters, the explaintion as follows:  
-https://github.com/Tencent/ncnn/wiki/param-and-model-file-structure 
+https://github.com/Tencent/ncnn/wiki/param-and-model-file-structure  
+* If you meet problem while compiling, there is an executable file already compiled in this directory. 
