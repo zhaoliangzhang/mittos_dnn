@@ -82,7 +82,9 @@ if this option is setted as 1, then visulization files will be generated, the op
 if this option is setted as 1, then the activity of every cycle will be printed and it could be annoying and you can set it to 0
 * * there are also other options to change the architecture of GPU, such as -gpgpu_n_clusters, -gpgpu_num_sp_units, -gpgpu_num_sfu_units, -gpgpu_shmem_num_bank, etc. You can explore more of the file.
 
-* After modifying the config file, run `ldd name_of_your_application` to confirm your application is using libcudart.so in GPGPU-Sim, then just run your application in terminal. The link below shows the meaning of the output  
+* After modifying the config file, run `ldd name_of_your_application` to confirm your application is using libcudart.so in GPGPU-Sim. Here is an example, you may get a result like this  
+![Image](https://raw.githubusercontent.com/zhaoliangzhang/mittos_dnn/master/image/linked_library_check.PNG)
+Then just run your application in terminal. The link below shows the meaning of the output  
 http://gpgpu-sim.org/manual/index.php/Main_Page#Understanding_Simulation_Output  
 
 * The link below is an instruction of visulization tool  
